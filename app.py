@@ -11,17 +11,19 @@ ASSETS = THIS_DIR / "assets"
 
 # Function to load and display the Lottie animation
 def load_lottie_animation(file_path):
+    if not file_path.exists():
+        st.error(f"Lottie animation file not found at {file_path}. Please ensure the file exists.")
+        return {}
     with open(file_path, "r") as f:
         return json.load(f)
 
 # Function to apply snowfall effect with multiple emojis falling separately
 def run_snow_animation():
-    # Pass a list of emojis to the 'emoji' parameter
     rain(
-        emoji="🥂²²",               # List of emojis
-        font_size=30,                     # Size of the emojis
-        falling_speed=7,                  # Speed at which emojis fall
-        animation_length="infinite"       # Duration of the animation
+        emoji="🥂²²",    # List of emojis
+        font_size=30,                # Size of the emojis
+        falling_speed=10,             # Speed at which emojis fall
+        animation_length="infinite"  # Duration of the animation
     )
 
 # Function to get the name from query parameters using the updated API
@@ -35,14 +37,20 @@ st.set_page_config(page_title="YASH", page_icon="🥂")
 # Run snowfall animation
 run_snow_animation()
 
-# Function to encode image to base64
+# Function to encode image to base64 with error handling
 def get_base64_image(image_path):
+    if not image_path.exists():
+        st.error(f"Background image not found at {image_path}. Please ensure the file exists.")
+        return ""  # Return an empty string or a default base64 string if desired
     with open(image_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
 # Embed custom CSS with background image and styling
 def set_custom_css():
     background_image = get_base64_image(ASSETS / "background.jpg")
+    if not background_image:
+        # Optionally, set a default background or skip setting the background
+        return
     css = f"""
     <style>
     /* Import Playfair Display font from Google Fonts */
@@ -128,14 +136,21 @@ set_custom_css()
 
 # Display header with personalized name
 PERSON_NAME = get_person_name()
-st.header(f"Happy Birthday {PERSON_NAME}! 😺🎂", anchor=False)
+st.header(f"Happy Birthday {PERSON_NAME}! 😺🎂", anchor=False) 
 
 # Display the Lottie animation
 lottie_animation = load_lottie_animation(ASSETS / "Animation - Birthday.json")
-st_lottie(lottie_animation, key="lottie-birthday", height=300)
+if lottie_animation:
+    st_lottie(lottie_animation, key="lottie-birthday", height=300)
 
 # Personalized birthday message with inline CSS to ensure black color
 st.markdown(
-    f"<p style='color: #000000; font-size:25px;'>Dear {PERSON_NAME}, 🎉🎂 Wishing you a fantastic day full of happiness, love, and unforgettable moments. May your year ahead be filled with success, joy, and endless laughter. Enjoy your special day! 🎈✨          -Inshaf😎-</p>",
+    f"""
+    <p style='color: #000000; font-size:25px;'>
+        Dear {PERSON_NAME}, 🎉🎂 Wishing you a fantastic day full of happiness, love, and unforgettable moments. May your year ahead be filled with success, joy, and endless laughter. Enjoy your special day! 🎈✨
+        <br><br>
+        -Inshaf😎-
+    </p>
+    """,
     unsafe_allow_html=True
 )
